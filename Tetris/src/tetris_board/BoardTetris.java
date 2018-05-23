@@ -28,8 +28,8 @@ public class BoardTetris {
      * @param cols
      */
     public BoardTetris(int rows, int cols) {
-        this.rows = rows;
-        this.cols = cols;
+        BoardTetris.rows = rows;
+        BoardTetris.cols = cols;
 
         /*
         Rows + 1 linhas e cols + 2 colunas, linha
@@ -72,7 +72,7 @@ public class BoardTetris {
     /**
      * Resetar a grade
      */
-    public static void resetBoard() {
+    public void resetBoard() {
         for (int i = 0; i < board.length - 1; i++) {
             for (int j = 1; j < board[i].length - 1; j++) {
                 board[i][j] = 0;

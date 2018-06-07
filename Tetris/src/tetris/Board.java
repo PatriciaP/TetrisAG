@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package tetris_board;
+package tetris;
 
-import tetris_piece.PieceTetris;
-import tetris_piece.Point;
+import tetris.piece.PieceTetris;
+import tetris.piece.Point;
 
 /**
  *
@@ -15,11 +15,11 @@ import tetris_piece.Point;
 /*
    Classe representa onde as pecas se movimentam  
  */
-public class BoardTetris {
+public class Board {
 
-    public static int rows;
-    public static int cols;
-    public static int[][] board;
+    public int rows;
+    public int cols;
+    public int[][] board;
 
     /**
      * Inicializar o array board.
@@ -27,9 +27,9 @@ public class BoardTetris {
      * @param rows
      * @param cols
      */
-    public BoardTetris(int rows, int cols) {
-        BoardTetris.rows = rows;
-        BoardTetris.cols = cols;
+    public Board(int rows, int cols) {
+        this.rows = rows;
+        this.cols = cols;
 
         /*
         Rows + 1 linhas e cols + 2 colunas, linha
@@ -55,8 +55,8 @@ public class BoardTetris {
      *
      * @param piece
      */
-    public static void removePiece(PieceTetris piece) {
-        Point[] indexes = piece.pieceIndexes(piece.position, piece.rotation);
+    public void removePiece(PieceTetris piece) {
+        Point[] indexes = piece.boardIndexes(piece.position, piece.rotation);
 
         for (Point p : indexes) {
             int row = p.y;
@@ -72,7 +72,7 @@ public class BoardTetris {
     /**
      * Resetar a grade
      */
-    public void resetBoard() {
+    public void reset() {
         for (int i = 0; i < board.length - 1; i++) {
             for (int j = 1; j < board[i].length - 1; j++) {
                 board[i][j] = 0;
@@ -80,7 +80,7 @@ public class BoardTetris {
         }
     }
 
-    public static void printBoard() {
+    public void print() {
         for (int i = 0; i < board.length - 1; i++) {
             for (int j = 1; j < board[i].length - 1; j++) {
                 System.out.print(board[i][j] + " ");
@@ -98,7 +98,7 @@ public class BoardTetris {
      * @param indexes
      * @return
      */
-    public static boolean isColliding(Point[] indexes) {
+    public boolean isColliding(Point[] indexes) {
         boolean collide = false;
 
         for (Point p : indexes) {
@@ -126,28 +126,28 @@ public class BoardTetris {
      Ao receber input de movimento (do usuário ou da AI), 
     estes métodos serão chamados para decidir se o movimento é possível,
      */
-    public static boolean canMoveLeft(PieceTetris piece) {
-        Point pos = new Point(piece.position.x - piece.blocksize, piece.position.y);
-        Point[] indexes = piece.pieceIndexes(pos, piece.rotation);
+    public boolean canMoveLeft(PieceTetris piece) {
+        Point pos = new Point(piece.position.x - piece.blockSize, piece.position.y);
+        Point[] indexes = piece.boardIndexes(pos, piece.rotation);
 
         return !isColliding(indexes);
     }
 
-    public static boolean canMoveRight(PieceTetris piece) {
-        Point pos = new Point(piece.position.x + piece.blocksize, piece.position.y);
-        Point[] indexes = piece.pieceIndexes(pos, piece.rotation);
+    public boolean canMoveRight(PieceTetris piece) {
+        Point pos = new Point(piece.position.x + piece.blockSize, piece.position.y);
+        Point[] indexes = piece.boardIndexes(pos, piece.rotation);
 
         return !isColliding(indexes);
     }
 
-    public static boolean canMoveDown(PieceTetris piece) {
-        Point pos = new Point(piece.position.x, piece.position.y + piece.blocksize);
-        Point[] indexes = piece.pieceIndexes(pos, piece.rotation);
+    public boolean canMoveDown(PieceTetris piece) {
+        Point pos = new Point(piece.position.x, piece.position.y + piece.blockSize);
+        Point[] indexes = piece.boardIndexes(pos, piece.rotation);
 
         return !isColliding(indexes);
     }
 
-    public static boolean canRotateCW(PieceTetris piece) {
+    public boolean canRotateCW(PieceTetris piece) {
         int rot = piece.rotation;
         rot++;
 
@@ -155,12 +155,12 @@ public class BoardTetris {
             rot = 0;
         }
 
-        Point[] indexes = piece.pieceIndexes(piece.position, rot);
+        Point[] indexes = piece.boardIndexes(piece.position, rot);
 
         return !isColliding(indexes);
     }
 
-    public static boolean canRotateCCW(PieceTetris piece) {
+    public boolean canRotateCCW(PieceTetris piece) {
         int rot = piece.rotation;
         rot--;
 
@@ -168,7 +168,7 @@ public class BoardTetris {
             rot = 3;
         }
 
-        Point[] indexes = piece.pieceIndexes(piece.position, rot);
+        Point[] indexes = piece.boardIndexes(piece.position, rot);
 
         return !isColliding(indexes);
     }
@@ -179,8 +179,8 @@ public class BoardTetris {
      * @param piece
      * @return
      */
-    public static boolean nextPieceFit(PieceTetris piece) {
-        Point[] indexes = piece.pieceIndexes(piece.position, piece.rotation);
+    public boolean willFitNext(PieceTetris piece) {
+        Point[] indexes = piece.boardIndexes(piece.position, piece.rotation);
 
         return !isColliding(indexes);
     }
@@ -192,8 +192,8 @@ public class BoardTetris {
      * @param piece
      * @return
      */
-    public static boolean pieceLandOffScreen(PieceTetris piece) {
-        Point[] indexes = piece.pieceIndexes(piece.position, piece.rotation);
+    public boolean pieceLandOffScreen(PieceTetris piece) {
+        Point[] indexes = piece.boardIndexes(piece.position, piece.rotation);
         boolean offscreen = false;
 
         for (Point p : indexes) {
@@ -211,8 +211,8 @@ public class BoardTetris {
      *
      * @param piece
      */
-    public static void updateBoard(PieceTetris piece) {
-        Point[] indexes = piece.pieceIndexes(piece.position, piece.rotation);
+    public  void updateBoard(PieceTetris piece) {
+        Point[] indexes = piece.boardIndexes(piece.position, piece.rotation);
 
         for (Point p : indexes) {
             int row = p.y;
@@ -221,8 +221,9 @@ public class BoardTetris {
             }
             int col = p.x + 1;
 
-            board[row][col] = piece.type + 1;
+            board[row][col] = piece.kind + 1;
         }
+
     }
 
     /**
@@ -230,7 +231,7 @@ public class BoardTetris {
      *
      * @return
      */
-    public static int checkCompleteRows() {
+    public int checkCompleteRows() {
         int completeRows = 0;
         for (int y = 0; y < rows; y++) {
             boolean ok = true;
@@ -247,14 +248,15 @@ public class BoardTetris {
         return completeRows;
     }
 
-    public static void deleteRow(int r) {
+    public void deleteRow(int r) {
         for (int i = r; i > 0; i--) {
-            System.arraycopy(board[i - 1], 1, board[i], 1, cols + 1 - 1);
+            for (int j = 1; j < cols + 1; j++) {
+                board[i][j] = board[i - 1][j];
+            }
         }
         for (int j = 1; j < cols + 1; j++) {
             board[0][j] = 0;
         }
 
     }
-
 }

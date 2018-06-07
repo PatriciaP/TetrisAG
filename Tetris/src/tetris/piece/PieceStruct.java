@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package tetris_piece;
+package tetris.piece;
 
 /**
  *
@@ -19,7 +19,7 @@ public class PieceStruct {
 
  /*PIECES define a estrutura de cada peça,
     usa type e rotation como indices de acesso.*/
-    static final int[][][][] PIECES
+    public static final int[][][][] PIECES
             = {
                 //TPiece
                 {

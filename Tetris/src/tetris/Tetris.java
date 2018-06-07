@@ -8,7 +8,6 @@ package tetris;
 import java.awt.Color;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
-import tetris_game_panel.GamePanel;
 
 /**
  *
@@ -20,7 +19,12 @@ public class Tetris {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        JFrame f = new JFrame("Tetris - GA");
+       startGame();
+    }
+    
+    
+    private static void startGame(){
+         JFrame f = new JFrame("Tetris - GA");
 
         int rows = 20;
         int cols = 10;
@@ -35,8 +39,9 @@ public class Tetris {
         f.pack();
         f.setVisible(true);
         f.setResizable(false);
-
+     
         gamePanel.startNewGame();
+        
     }
 
 }

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package tetris_game_panel;
+package tetris;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -13,11 +13,11 @@ import java.util.Random;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import javax.swing.JOptionPane;
-import tetris_board.BoardTetris;
-import tetris_piece.PieceColor;
-import tetris_piece.PieceTetris;
-import tetris_piece.PieceTranslation;
-import tetris_piece.Point;
+import tetris.Board;
+import tetris.piece.PieceColor;
+import tetris.piece.PieceTetris;
+import tetris.piece.PieceTranslation;
+import tetris.piece.Point;
 
 /**
  *
@@ -25,14 +25,14 @@ import tetris_piece.Point;
  */
 public class GamePanel extends javax.swing.JPanel implements Runnable {
 
-    public static BoardTetris board;
-    public static int blocksize;
-    public static PieceTetris fallingpiece;
-    public static boolean gameover, restart;
-    public static Random random;
-    public static ScheduledThreadPoolExecutor animator;
-    public static int cols;
-    public static int rows;
+    public Board board;
+    public int blockSize;
+    public PieceTetris fallingPiece;
+    public boolean gameOver, restart;
+    public Random random;
+    public ScheduledThreadPoolExecutor animator;
+    public int cols;
+    public int rows;
     static long delayToStart;
     static long step;
 
@@ -52,8 +52,8 @@ public class GamePanel extends javax.swing.JPanel implements Runnable {
      * @param rows
      * @param seed
      */
-    public GamePanel(int blocksize, int cols, int rows, int seed) {
-        this(rows, cols, blocksize);
+    public GamePanel(int rows, int cols, int blockSize, int seed) {
+        this(rows, cols, blockSize);
         random = new Random(seed);
     }
 
@@ -67,14 +67,14 @@ public class GamePanel extends javax.swing.JPanel implements Runnable {
      */
     public GamePanel(int rows, int cols, int blocksize) {
         restart = false;
-        this.blocksize = blocksize;
+        this.blockSize = blocksize;
         this.setPreferredSize(new Dimension(cols * blocksize, rows * blocksize));
         setDoubleBuffered(true);
         random = new Random();
-        board = new BoardTetris(rows, cols);
-        GamePanel.cols = cols;
-        GamePanel.rows = rows;
-
+        board = new Board(rows, cols);
+        this.cols = cols;
+        this.rows = rows;
+        fallingPiece = randomPiece();
         setFocusable(true);
         requestFocus();
         addKeyWatcher();
@@ -85,30 +85,28 @@ public class GamePanel extends javax.swing.JPanel implements Runnable {
     /*variáveis board, fallingPiece e gameOver mantem o estado atual do game,
     e são resetadas neste metodo*/
     public void startNewGame() {
-        gameover = false;
-        board.resetBoard();
-        fallingpiece = randomPiece();
-
+        gameOver = false;
+        board.reset();
+        fallingPiece = randomPiece();
         delayToStart = 100L;
         step = 1000L / 4;
-
         animator = null;
         animator = new ScheduledThreadPoolExecutor(1);
         animator.scheduleAtFixedRate(this, delayToStart, step, TimeUnit.MILLISECONDS);
 
     }
 
-    private PieceTetris randomPiece() {
-        int type = random.nextInt(7);
+    protected PieceTetris randomPiece() {
+        int kind = random.nextInt(7);
         int rot = random.nextInt(4);
 
         PieceTetris piece = new PieceTetris();
-        piece.blocksize = GamePanel.blocksize;
-        piece.type = type;
+        piece.blockSize = this.blockSize;
+        piece.kind = kind;
         piece.rotation = rot;
 
-        int x = blocksize * (cols / 2 + PieceTranslation.TRANSLATIONS[type][rot][0]);
-        int y = blocksize * PieceTranslation.TRANSLATIONS[type][rot][1];
+        int x = blockSize * (cols / 2 + PieceTranslation.TRANSLATIONS[kind][rot][0]);
+        int y = blockSize * PieceTranslation.TRANSLATIONS[kind][rot][1];
 
         piece.position = new Point(x, y);
 
@@ -148,16 +146,16 @@ public class GamePanel extends javax.swing.JPanel implements Runnable {
     @Override
     public void run() {
 
-        if (gameover) {
+        if (gameOver) {
             animator.shutdown();
         }
 
-        if (BoardTetris.canMoveDown(fallingpiece)) {
-            fallingpiece.moveDown();
+        if (board.canMoveDown(fallingPiece)) {
+            fallingPiece.moveDown();
         } else {
             //quando a peca repousa, board atualiza e verifica linhas completadas
-            BoardTetris.updateBoard(fallingpiece);
-            int cleared = BoardTetris.checkCompleteRows();
+            board.updateBoard(fallingPiece);
+            int cleared = board.checkCompleteRows();
 
             //checa duas condicoes de game over e atualiza o fallingpiece
             addNewPiece();
@@ -167,91 +165,79 @@ public class GamePanel extends javax.swing.JPanel implements Runnable {
     }
 
     private void addKeyWatcher() {
-        addKeyListener(new KeyAdapter() {
-            @Override
+        addKeyListener(
+                new KeyAdapter() {
             public void keyPressed(KeyEvent e) {
-                if (GamePanel.gameover) {
+                if (gameOver) {
                     return;
                 }
 
                 int key = e.getKeyCode();
-                switch (key) {
-                    case KeyEvent.VK_SPACE:
-                        if (BoardTetris.canMoveDown(fallingpiece)) {
-                            GamePanel.fallingpiece.moveDown();
-                        }
-                        break;
-                    case KeyEvent.VK_LEFT:
-                        if (BoardTetris.canMoveLeft(GamePanel.fallingpiece)) {
-                            GamePanel.fallingpiece.moveLeft();
-                        }
-                        break;
-                    case KeyEvent.VK_RIGHT:
-                        if (BoardTetris.canMoveRight(GamePanel.fallingpiece)) {
-                            GamePanel.fallingpiece.moveRight();
-                        }
-                        break;
-                    case KeyEvent.VK_UP:
-                    case KeyEvent.VK_NUMPAD3:
-                        if (BoardTetris.canRotateCW(GamePanel.fallingpiece)) {
-                            GamePanel.fallingpiece.rotateClockWise();
-                        }
-                        break;
-                    case KeyEvent.VK_DOWN:
-                    case KeyEvent.VK_NUMPAD1:
-                        if (BoardTetris.canRotateCCW(GamePanel.fallingpiece)) {
-                            GamePanel.fallingpiece.rotateCounterClockWise();
-                        }
-                        break;
-               
-                    default:
-                        break;
+                if (key == KeyEvent.VK_SPACE) {
+
+                } else if (key == KeyEvent.VK_LEFT) {
+                    if (board.canMoveLeft(fallingPiece)) {
+                        fallingPiece.moveLeft();
+                    }
+
+                } else if (key == KeyEvent.VK_RIGHT) {
+                    if (board.canMoveRight(fallingPiece)) {
+                        fallingPiece.moveRight();
+                    }
+
+                } else if (key == KeyEvent.VK_UP || key == KeyEvent.VK_NUMPAD3) {
+                    if (board.canRotateCW(fallingPiece)) {
+                        fallingPiece.rotateClockWise();
+                    }
+                } else if (key == KeyEvent.VK_DOWN || key == KeyEvent.VK_NUMPAD1) {
+                    if (board.canRotateCCW(fallingPiece)) {
+                        fallingPiece.rotateCounterClockWise();
+                    }
                 }
 
-                new GamePanel().repaint();
+                repaint();
             }
         });
-
     }
 
     /**
      * Verifica duas situacoes de game over
      */
-    private void addNewPiece() {
+    protected void addNewPiece() {
 
         //1 situacao: fora da tela
-        if (BoardTetris.pieceLandOffScreen(fallingpiece)) {
-            gameover = true;
-            fallingpiece = null;
+        if (board.pieceLandOffScreen(fallingPiece)) {
+            gameOver = true;
+            fallingPiece = null;
+            return;
         }
 
         //2 situacao: se cabe no board
         PieceTetris next = randomPiece();
-        if (BoardTetris.nextPieceFit(next)) {
-            fallingpiece = next;
+        if (board.willFitNext(next)) {
+            fallingPiece = next;
         } else {
-            gameover = true;
-            fallingpiece = null;
+            fallingPiece = null;
+            gameOver = true;
 
         }
 
     }
 
     private void renderGame(Graphics g) {
-        if (fallingpiece != null) {
-            fallingpiece.drawPiece(g);
+        if (fallingPiece != null) {
+            fallingPiece.draw(g);
         }
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                int block = BoardTetris.board[i][j + 1];
+                int block = board.board[i][j + 1];
 
                 if (block != 0) {
                     g.setColor(PieceColor.COLORS[block - 1]);
-                    g.fillRect(j * blocksize, i * blocksize, blocksize, blocksize);
+                    g.fillRect(j * blockSize, i * blockSize, blockSize, blockSize);
                 }
             }
-
         }
     }
 

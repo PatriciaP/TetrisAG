@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package tetris_piece;
+package tetris.piece;
 
 import java.awt.Color;
 
